@@ -1,9 +1,0 @@
-#!/usr/local/perl
-
-# this is a comment
-
-$The_string = "Hello,world\n";
-$A  = 5 ;
-
-
-print "$The_string,$A";
