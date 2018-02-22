@@ -1,8 +1,22 @@
 import pickle
+import argparse
 import string
 import re
 
-filepath = 'segment/segment.data.train'
+def get_args():
+	parser = argparse.ArgumentParser(description = 'Convert file in assignment2 format into Text Classification feature file')
+	parser.add_argument("--rp", type=str, required=True, help="Raw data file in Part 2 format")
+	parser.add_argument("--fp", type=str, required=True, help="Path to save feature file")
+	args = parser.parse_args()
+	return args
+
+args = get_args()
+
+
+datafilepath = args.rp
+savepath = args.fp
+
+
 
 #Clean out label of sentence tool
 
@@ -68,7 +82,7 @@ def EMAILMARKcnt(sentence):
 	return num
 	
 def INDENTcnt(sentence):
-	num = count(sentence,'\t')  #Account for the very first indent separating label and text
+	num = count(sentence,'\t')  
 
 	return num
 
@@ -77,11 +91,11 @@ def QUOTATIONcnt(sentence):
 
 	return num
 
-def firstQUOTsignpos(sentence):
+def firstPUNCsignpos(sentence):
 	cnt = 0
 	quotpos = 0
 	while cnt < len(sentence):
-		if sentence[cnt] == ':' or sentence[cnt] == '>':
+		if sentence[cnt] in string.punctuation:
 			quotpos = cnt
 			return quotpos
 		cnt += 1
@@ -93,7 +107,7 @@ def firstQUOTsignpos(sentence):
 
 #Open up file and put everything into a list of strings
 try:
-	data = open(filepath)
+	data = open(datafilepath)
 
 	lines = [] #Text themselfs
 	Labelnames = [] #Unique label names
@@ -108,16 +122,18 @@ try:
 
 			lines.append(each_line)	
 			#Convert Label 
+
 			Tempclass.append(findLABEL(lines[cnt]))
 
 			cnt += 1
 
 		#Set Unique Label classes
-		Labelnames = set(Tempclass)		
+		#Labelnames = list(set(Tempclass))
 	except ValueError:
 			pass
 except IOError as err:
 	print('File error:' + str(err))
+	exit()
 
 #################################################
 # Feature extraction rules:			#
@@ -136,10 +152,19 @@ except IOError as err:
 
 cleanlines = []
 
+
+#Make sure cleanlines only have lines without any label in front
 cnt = 0
 while cnt < len(lines):
-	cleanlines.append(labelcleaner(lines[cnt]))
+	if CleanSplitter(lines[cnt])[0] in Labelnames:
+		cleanlines.append(labelcleaner(lines[cnt]))
+	else:
+		cleanlines.append(lines[cnt])
 	cnt += 1
+
+
+
+
 
 numWords = []
 numWhtspc = []
@@ -150,7 +175,7 @@ numLetter = []
 numUpper = []
 numEmlMk = []
 numIndent = []
-posQuot = []
+posPunc = []
 
 for each_line in cleanlines:
 	numWords.append(WORDcnt(each_line))
@@ -162,7 +187,7 @@ for each_line in cleanlines:
 	numUpper.append(UPPERcnt(each_line))
 	numEmlMk.append(EMAILMARKcnt(each_line))
 	numIndent.append(INDENTcnt(each_line))
-	posQuot.append(firstQUOTsignpos(each_line))
+	posPunc.append(firstPUNCsignpos(each_line))
 
 
 
@@ -170,6 +195,9 @@ for each_line in cleanlines:
 #Initializing Features with label, then append each converted features
 Features = []
 cnt = 0
+
+
+
 while cnt <len(Tempclass):
 	Features.append([Tempclass[cnt]])
 	cnt += 1
@@ -185,7 +213,7 @@ for each_item in Features:
 	each_item.append(numUpper[cnt])
 	each_item.append(numEmlMk[cnt])
 	each_item.append(numIndent[cnt])
-	each_item.append(posQuot[cnt])
+	each_item.append(posPunc[cnt])
 
 	cnt+=1
 	
@@ -194,8 +222,22 @@ try:
 
 	#	Let's test for pickle	
 
-	with open('segment.feature','wb') as converted_file:
+	with open(savepath,'wb') as converted_file:
 		pickle.dump(Features,converted_file)
+except IOError as err:
+	print('File error: ' +str(err))
+
+
+Labelnames = ['TABLE', 'ADDRESS', 'HEADL', 'SIG', 'BLANK', 'GRAPHIC', 'NNHEAD', 'QUOTED', 'PTEXT', 'ITEM']
+
+
+try:
+
+
+	#	Let's test for pickle	
+
+	with open('Label.Names','wb') as converted_file:
+		pickle.dump(Labelnames,converted_file)
 except IOError as err:
 	print('File error: ' +str(err))
 

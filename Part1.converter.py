@@ -1,12 +1,25 @@
 import pickle
 import string
+import argparse
 
-filepath = 'sent.data.train'
+def get_args():
+	parser = argparse.ArgumentParser(description = 'Convert file in assignment1 format into End Of Sentence detection')
+	parser.add_argument("--rp", type=str, required=True, help="Raw data file in Part 1 format")
+	parser.add_argument("--fp", type=str, required=True, help="Path to save feature file")
+	args = parser.parse_args()
+	return args
+
+args = get_args()
+
+
+datafilepath = args.rp
+savepath = args.fp
+
 abbrev = 'classes/abbrevs'
 internal = 'classes/sentence_internal'
 
 try:
-	data = open(filepath)
+	data = open(datafilepath)
 	abbrevclass = open(abbrev)
 	internalclass = open(internal)
 
@@ -212,7 +225,7 @@ try:
 
 	#	Let's test for pickle	
 
-		with open('sentdata.feature','wb') as converted_file:
+		with open(savepath,'wb') as converted_file:
 			pickle.dump(Features,converted_file)
 	except IOError as err:
 		print('File error: ' +str(err))
