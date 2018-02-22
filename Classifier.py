@@ -33,6 +33,7 @@ try:
 		Features = pickle.load(feature_file)
 except IOError as err:
 	print('File error '+ str(err))
+	quit()
 except pickle.PickleError as perr:
 	print('Pickling error: ' + str(perr))
 
@@ -43,10 +44,14 @@ for each_line in Features:
 	TempClass.append(each_line[0])
 	each_line.pop(0)
 
+#Check if Label from Part1 format or Part2 format
+if isinstance(TempClass[0],int):
+	LabelClass = TempClass
 
-for each_label in TempClass:
-	n = Labelnames.index(each_label)
-	LabelClass.append(n)
+else:
+	for each_label in TempClass:
+		n = Labelnames.index(each_label)
+		LabelClass.append(n)
 
 
 
